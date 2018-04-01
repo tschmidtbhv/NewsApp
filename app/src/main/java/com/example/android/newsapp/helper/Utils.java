@@ -1,5 +1,8 @@
 package com.example.android.newsapp.helper;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import com.example.android.newsapp.data.Article;
@@ -25,6 +28,20 @@ import java.util.List;
  * Created by Thomas Schmidt on 01.04.2018.
  */
 public final class Utils {
+
+
+    /**
+     * Check the Connection to the internet
+     * @param context
+     * @return
+     */
+    public static boolean isConnected(Context context){
+        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        boolean isConnected = networkInfo != null && networkInfo.isConnected();
+        return isConnected;
+    }
 
     /**
      * Make URL Object from
