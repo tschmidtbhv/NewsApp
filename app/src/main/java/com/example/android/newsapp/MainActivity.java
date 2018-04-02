@@ -1,5 +1,6 @@
 package com.example.android.newsapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,6 +12,9 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -42,6 +46,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setupReferences();
         setupRecylerView();
         prepareLoading();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -119,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     /**
      * Set Articles update the view visibility
+     *
      * @param data Article List
      */
     private void setArticles(List<Article> data) {
@@ -148,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         String message = "";
         switch (problemType) {
-            case Config.NOCONNECTION :
+            case Config.NOCONNECTION:
                 message = getString(R.string.not_connected);
                 break;
             case Config.NOCONTENT:
