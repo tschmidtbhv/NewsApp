@@ -57,8 +57,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     /**
-     * Setup for related views
-     * Start loading
+     * Prepare Loading
+     * call Start loading
+     * if Inet available
      */
     private void prepareLoading() {
         if (Utils.isConnected(this)) {
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /**
      * Start loading process
      *
-     * @param isFirstStart
+     * @param isFirstStart boolean for firstStart
      */
     private void startLoading(boolean isFirstStart) {
         if (isFirstStart) {
@@ -116,6 +117,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     }
 
+    /**
+     * Set Articles update the view visibility
+     * @param data Article List
+     */
     private void setArticles(List<Article> data) {
 
         refreshLayout.setRefreshing(false);
@@ -135,16 +140,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     /**
      * Set the Info to the TextView
      *
-     * @param nocontent
+     * @param problemType Type for
+     *                    not connected
+     *                    or no content
      */
-    private void setInfo(int nocontent) {
+    private void setInfo(int problemType) {
 
         String message = "";
-        switch (nocontent) {
-            case 0:
+        switch (problemType) {
+            case Config.NOCONNECTION :
                 message = getString(R.string.not_connected);
                 break;
-            case 1:
+            case Config.NOCONTENT:
                 message = getString(R.string.no_content);
                 break;
         }
@@ -152,6 +159,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         infoText.setText(message);
     }
 
+    /**
+     * Refresh data
+     */
     @Override
     public void onRefresh() {
 
