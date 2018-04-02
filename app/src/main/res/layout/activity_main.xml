@@ -27,6 +27,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:layout_margin="@dimen/info_margin"
+            android:lineSpacingExtra="@dimen/std_linespacing"
             android:visibility="gone" />
 
     </RelativeLayout>
