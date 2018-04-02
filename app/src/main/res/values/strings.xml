@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">News App</string>
-    <string name="not_connected">You`re not connected to the internet</string>
-    <string name="no_content">Currently no Content</string>
+    <string name="not_connected">You`re not connected to the internet. Please check your connection and try again.</string>
+    <string name="no_content">Currently no Content, please pull down to refresh or try again later.</string>
+    <string name="no_browser">If you want to see the Article you need to install a Webbrowser. Please have a look at GooglePlay Store</string>
     <string name="written_by">Written by: %s %s</string>
+    <string name="close">Close</string>
 </resources>

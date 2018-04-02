@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.newsapp.R;
 import com.example.android.newsapp.data.Article;
@@ -30,7 +31,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
         private TextView author;
         private TextView date;
 
-        public ViewHolder(View itemView) {
+        private ViewHolder(final View itemView) {
             super(itemView);
 
             title = itemView.findViewById(R.id.title);
@@ -46,6 +47,8 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
                     intent.setData(Uri.parse(article.getWebUrl()));
                     if (Utils.isAvailable(context, intent)) {
                         context.startActivity(intent);
+                    } else {
+                        Toast.makeText(context, R.string.no_browser, Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -90,7 +93,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
     /**
      * Update the RecylerView Data
      *
-     * @param data
+     * @param data Articles
      */
     public void updateData(List<Article> data) {
 

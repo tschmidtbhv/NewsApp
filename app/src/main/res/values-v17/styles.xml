@@ -9,8 +9,8 @@
     </style>
 
     <style name="ItemTheme" parent="AppTheme">
-        <item name="android:layout_marginLeft">@dimen/std_margin</item>
-        <item name="android:layout_marginRight">@dimen/std_margin</item>
+        <item name="android:layout_marginEnd">@dimen/std_margin</item>
+        <item name="android:layout_marginStart">@dimen/std_margin</item>
         <item name="android:layout_marginTop">@dimen/std_margin</item>
     </style>
 </resources>
