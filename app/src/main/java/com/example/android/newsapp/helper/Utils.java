@@ -1,9 +1,11 @@
 package com.example.android.newsapp.helper;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 
 import com.example.android.newsapp.data.Article;
 import com.example.android.newsapp.data.Tag;
@@ -32,11 +34,12 @@ public final class Utils {
 
     /**
      * Check the Connection to the internet
+     *
      * @param context
      * @return
      */
-    public static boolean isConnected(Context context){
-        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    public static boolean isConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
         boolean isConnected = networkInfo != null && networkInfo.isConnected();
@@ -46,13 +49,14 @@ public final class Utils {
     /**
      * Make URL Object from
      * given url String
+     *
      * @param url URLString
      * @return URL Object
      */
-    public static URL makeURL(String url){
+    public static URL makeURL(String url) {
 
         URL urlObj = null;
-        if(url != null && url.length() > 0) {
+        if (url != null && url.length() > 0) {
             try {
                 urlObj = new URL(url);
             } catch (MalformedURLException e) {
@@ -65,6 +69,7 @@ public final class Utils {
 
     /**
      * Fire an HttpRequest to given URL
+     *
      * @param url Website URL Obj
      * @return InputStream
      * @throws IOException
@@ -73,26 +78,26 @@ public final class Utils {
 
         String jsonString = "";
 
-        if(url == null) return jsonString;
+        if (url == null) return jsonString;
 
         InputStream inputStream = null;
         HttpURLConnection httpURLConnection = null;
 
         try {
-            httpURLConnection =  (HttpURLConnection )url.openConnection();
+            httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setConnectTimeout(1000);
             httpURLConnection.setReadTimeout(1500);
             httpURLConnection.setRequestMethod(Config.REQUESTMODE);
             httpURLConnection.connect();
 
-            if(httpURLConnection.getResponseCode() == Config.RESPONSEOK) {
+            if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 inputStream = httpURLConnection.getInputStream();
                 jsonString = makeJSONFromInputStream(inputStream);
             }
         } finally {
 
-            if(httpURLConnection != null) httpURLConnection.disconnect();
-            if(inputStream != null) inputStream.close();
+            if (httpURLConnection != null) httpURLConnection.disconnect();
+            if (inputStream != null) inputStream.close();
         }
 
         return jsonString;
@@ -100,6 +105,7 @@ public final class Utils {
 
     /**
      * Get JSON from the InputStream
+     *
      * @param inputStream
      * @return JSONString
      * @throws IOException
@@ -108,7 +114,7 @@ public final class Utils {
 
         StringBuilder output = new StringBuilder();
 
-        if(inputStream != null) {
+        if (inputStream != null) {
 
             try {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Config.CHARSET);
@@ -119,7 +125,7 @@ public final class Utils {
                     output.append(line);
                     line = bufferedReader.readLine();
                 }
-            }catch (UnsupportedEncodingException e){
+            } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
         }
@@ -129,21 +135,22 @@ public final class Utils {
 
     /**
      * Extract Articles from JsonString
+     *
      * @param jsonString JSON Response
      * @return Article List
      */
-    public static List<Article> createAriclesFromJson(String jsonString){
+    public static List<Article> createAriclesFromJson(String jsonString) {
 
         List<Article> articleList = new ArrayList<>();
 
-        if(jsonString != null){
+        if (jsonString != null) {
 
             try {
                 JSONObject jsonRoot = new JSONObject(jsonString);
                 JSONObject response = jsonRoot.getJSONObject("response");
                 JSONArray results = response.getJSONArray("results");
 
-                for(int i = 0; i < results.length(); i++){
+                for (int i = 0; i < results.length(); i++) {
 
                     JSONObject result = results.getJSONObject(i);
                     String sectionName = result.getString("sectionName");
@@ -155,18 +162,18 @@ public final class Utils {
                     List<Tag> tagList = new ArrayList<>();
 
                     JSONArray tags = result.optJSONArray("tags");
-                    if(tags != null){
-                        for(int y = 0; y < tags.length(); y++){
+                    if (tags != null) {
+                        for (int y = 0; y < tags.length(); y++) {
                             JSONObject tag = tags.getJSONObject(y);
                             String firstName = tag.optString("firstName");
                             String lastName = tag.optString("lastName");
 
-                            if(firstName != null && lastName != null){
+                            if (firstName != null && lastName != null) {
                                 tagList.add(new Tag(firstName, lastName));
                             }
                         }
                     }
-                    articleList.add(new Article(sectionName, webPublicationDate, webTitle,webUrl,tagList));
+                    articleList.add(new Article(sectionName, webPublicationDate, webTitle, webUrl, tagList));
                 }
 
             } catch (JSONException e) {
@@ -175,5 +182,20 @@ public final class Utils {
         }
 
         return articleList;
+    }
+
+    /**
+     * Check is posible to open Intent
+     *
+     * @param context
+     * @param intent
+     * @return
+     */
+    public static boolean isAvailable(Context context, Intent intent) {
+        final PackageManager packageManager = context.getPackageManager();
+        List<ResolveInfo> list =
+                packageManager.queryIntentActivities(intent,
+                        PackageManager.MATCH_DEFAULT_ONLY);
+        return list.size() > 0;
     }
 }

@@ -1,17 +1,19 @@
 package com.example.android.newsapp.adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.android.newsapp.data.Article;
 import com.example.android.newsapp.R;
+import com.example.android.newsapp.data.Article;
 import com.example.android.newsapp.data.Tag;
+import com.example.android.newsapp.helper.Utils;
 
 import java.util.List;
 
@@ -21,7 +23,7 @@ import java.util.List;
  */
 public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView title;
         private TextView section;
@@ -35,13 +37,25 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
             section = itemView.findViewById(R.id.section);
             author = itemView.findViewById(R.id.author);
             date = itemView.findViewById(R.id.date);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Article article = articleList.get(getLayoutPosition());
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(article.getWebUrl()));
+                    if (Utils.isAvailable(context, intent)) {
+                        context.startActivity(intent);
+                    }
+                }
+            });
         }
     }
 
     private Context context;
     private List<Article> articleList;
 
-    public NewsAdapter(Context context, List<Article> articleList){
+    public NewsAdapter(Context context, List<Article> articleList) {
         this.context = context;
         this.articleList = articleList;
     }
@@ -59,11 +73,13 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
         holder.title.setText(article.getWebTitle());
         holder.section.setText(article.getSectionName());
 
-        if(article.getTags() != null && article.getTags().size() > 0) {
+        if (article.getTags() != null && article.getTags().size() > 0) {
             Tag tag = article.getTags().get(0); //Get the first Author
-            holder.author.setText(tag.getFirstName() + " " + tag.getLastName());
+            holder.author.setText(context.getString(R.string.written_by, tag.getFirstName(), tag.getLastName()));
+        } else {
+            holder.author.setText("");
         }
-        holder.date.setText(article.getWebPublicationDate());
+        holder.date.setText(article.getFormatedPublicationDate());
     }
 
     @Override
@@ -71,13 +87,17 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
         return articleList.size();
     }
 
-
+    /**
+     * Update the RecylerView Data
+     *
+     * @param data
+     */
     public void updateData(List<Article> data) {
-        if (data != null){
+
+        if (data != null) {
             articleList.clear();
             articleList.addAll(data);
             notifyDataSetChanged();
-            Log.v(NewsAdapter.class.getSimpleName(), "updateData " + data.toString());
         }
     }
 }

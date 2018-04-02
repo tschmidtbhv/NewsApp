@@ -1,6 +1,10 @@
 package com.example.android.newsapp.data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * NewsApp
@@ -29,6 +33,19 @@ public class Article {
 
     public String getWebPublicationDate() {
         return webPublicationDate;
+    }
+
+    public String getFormatedPublicationDate() {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat dateFormatter2 = new SimpleDateFormat("EE dd MMM yyyy", Locale.ENGLISH);
+
+        try {
+            Date newsDate = dateFormatter.parse(getWebPublicationDate());
+            return dateFormatter2.format(newsDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return getWebPublicationDate();
     }
 
     public String getWebTitle() {

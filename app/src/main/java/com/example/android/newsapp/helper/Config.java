@@ -8,7 +8,6 @@ public final class Config {
 
     public final static int LOADERID = 1;
     public final static String REQUESTMODE = "GET";
-    public final static int RESPONSEOK = 200;
     public final static String CHARSET = "UTF-8";
 
     public final static int NOCONNECTION = 0;

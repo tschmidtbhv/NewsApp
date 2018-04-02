@@ -1,12 +1,12 @@
 package com.example.android.newsapp;
 
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,23 +30,56 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private NewsAdapter newsAdapter;
     private List<Article> articleList;
     private ProgressBar progressBar;
+    private TextView infoText;
     private SwipeRefreshLayout refreshLayout;
+    private boolean isFirstStart = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        setupReferences();
         setupRecylerView();
+        prepareLoading();
+    }
 
-        if(Utils.isConnected(this)) {
-            progressBar = findViewById(R.id.progressbar);
+    /**
+     * Setup for View references
+     */
+    private void setupReferences() {
+
+        recyclerView = findViewById(R.id.recyclerview);
+        infoText = findViewById(R.id.infotext);
+        progressBar = findViewById(R.id.progressbar);
+        refreshLayout = findViewById(R.id.swipetorefresh);
+        refreshLayout.setOnRefreshListener(this);
+    }
+
+    /**
+     * Setup for related views
+     * Start loading
+     */
+    private void prepareLoading() {
+        if (Utils.isConnected(this)) {
             progressBar.setVisibility(View.VISIBLE);
-            refreshLayout = findViewById(R.id.swipetorefresh);
-            refreshLayout.setOnRefreshListener(this);
-            getSupportLoaderManager().initLoader(Config.LOADERID, null, this);
-        }else {
+            startLoading(isFirstStart);
+        } else {
+            progressBar.setVisibility(View.GONE);
             setInfo(Config.NOCONNECTION);
+        }
+    }
+
+    /**
+     * Start loading process
+     *
+     * @param isFirstStart
+     */
+    private void startLoading(boolean isFirstStart) {
+        if (isFirstStart) {
+            getSupportLoaderManager().initLoader(Config.LOADERID, null, this);
+        } else {
+            getSupportLoaderManager().restartLoader(Config.LOADERID, null, this);
         }
     }
 
@@ -55,13 +88,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     private void setupRecylerView() {
 
-        if(articleList == null) articleList = new ArrayList<>();
+        if (articleList == null) articleList = new ArrayList<>();
         newsAdapter = new NewsAdapter(MainActivity.this, articleList);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this,layoutManager.getOrientation());
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, layoutManager.getOrientation());
 
-        recyclerView = findViewById(R.id.recyclerview);
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(newsAdapter);
@@ -76,34 +108,39 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(@NonNull Loader<List<Article>> loader, List<Article> data) {
         setArticles(data);
+        Log.v(MainActivity.class.getSimpleName(), "onLoadFinished");
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<List<Article>> loader) {
-        setArticles(new ArrayList<Article>());
+
     }
 
     private void setArticles(List<Article> data) {
 
-        progressBar.setVisibility(View.GONE);
         refreshLayout.setRefreshing(false);
-        if(data != null && data.size() > 0) {
-            newsAdapter.updateData(data);
+        progressBar.setVisibility(View.GONE);
+
+        if (data != null && data.size() > 0) {
             recyclerView.setVisibility(View.VISIBLE);
-            Log.v(MainActivity.class.getSimpleName(), "RESULT setArticles: " + data.size());
-        }else {
+            infoText.setVisibility(View.INVISIBLE);
+            newsAdapter.updateData(data);
+        } else if (data.size() == 0) {
+            recyclerView.setVisibility(View.GONE);
+            infoText.setVisibility(View.VISIBLE);
             setInfo(Config.NOCONTENT);
         }
     }
 
     /**
      * Set the Info to the TextView
+     *
      * @param nocontent
      */
     private void setInfo(int nocontent) {
 
         String message = "";
-        switch (nocontent){
+        switch (nocontent) {
             case 0:
                 message = getString(R.string.not_connected);
                 break;
@@ -111,14 +148,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 message = getString(R.string.no_content);
                 break;
         }
-
-        TextView infoText = findViewById(R.id.infotext);
+        infoText.setVisibility(View.VISIBLE);
         infoText.setText(message);
-        recyclerView.setVisibility(View.GONE);
     }
 
     @Override
     public void onRefresh() {
-        getSupportLoaderManager().restartLoader(Config.LOADERID,null,this);
+
+        if (Utils.isConnected(this)) {
+            startLoading(false);
+        } else {
+            setInfo(Config.NOCONNECTION);
+            recyclerView.setVisibility(View.GONE);
+            refreshLayout.setRefreshing(false);
+            progressBar.setVisibility(View.GONE);
+        }
     }
+
+
 }
