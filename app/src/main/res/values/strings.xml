@@ -4,5 +4,8 @@
     <string name="no_content">Currently no Content, please pull down to refresh or try again later.</string>
     <string name="no_browser">If you want to see the Article you need to install a Webbrowser. Please have a look at GooglePlay Store</string>
     <string name="written_by">Written by: %s %s</string>
-    <string name="close">Close</string>
+    <string name="setting">Settings</string>
+
+    <string name="newslimit">News limit</string>
+    <string name="newssection">News Section</string>
 </resources>
