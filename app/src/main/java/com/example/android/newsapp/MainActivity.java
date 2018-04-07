@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if(!Utils.hasSectionsLoaded(this))getSupportLoaderManager().initLoader(Config.SECTIONLOADERID, null, this);
             getSupportLoaderManager().initLoader(Config.ARTICLELOADERID, null, this);
         } else {
+            if(!Utils.hasSectionsLoaded(this))getSupportLoaderManager().initLoader(Config.SECTIONLOADERID, null, this);
             getSupportLoaderManager().restartLoader(Config.ARTICLELOADERID, null, this);
         }
     }

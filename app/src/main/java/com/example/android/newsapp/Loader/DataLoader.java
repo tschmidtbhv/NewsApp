@@ -3,7 +3,6 @@ package com.example.android.newsapp.Loader;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.content.AsyncTaskLoader;
-import android.util.Log;
 
 import com.example.android.newsapp.helper.Config;
 import com.example.android.newsapp.helper.Utils;
@@ -22,10 +21,12 @@ import java.util.List;
 public class DataLoader extends AsyncTaskLoader<List<?>> {
 
     private boolean mLoadSection;
+    private Context context;
 
     public DataLoader(@NonNull Context context, boolean loadSection) {
         super(context);
         mLoadSection = loadSection;
+        this.context = context;
     }
 
     @Override
@@ -38,14 +39,20 @@ public class DataLoader extends AsyncTaskLoader<List<?>> {
 
         List<?> dataList = new ArrayList<>();
 
-        URL url = Utils.makeURL(Config.GUARDIANURL);
-        if(mLoadSection) url = Utils.makeURL(Config.SECTIONSURL);
+        URL url;
+        if (mLoadSection) {
+            url = Utils.makeURL(Utils.getBuildedSectionURL());
+        } else {
+            String sectionId = Utils.getValueForSavedKey(context, Config.LISTKEY);
+            String limit = Utils.getValueForSavedKey(context, Config.LIMITKEY);
 
-        String jsonString = null;
+            url = Utils.makeURL(Utils.getBuildedURLForSettings(sectionId, limit));
+        }
+
+        String jsonString;
 
         try {
             jsonString = Utils.makeHTTPRequest(url);
-            Log.v(DataLoader.class.getSimpleName(), "JSON: " + jsonString);
             if (mLoadSection) {
                 dataList = Utils.createSectionsFromJson(jsonString);
             } else {

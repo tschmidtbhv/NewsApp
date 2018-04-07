@@ -18,8 +18,7 @@ public interface Config {
     int NOCONTENT = 1;
 
     //Guardian Url ordered by newest include contributor
-    String GUARDIANURL = "http://content.guardianapis.com/lifeandstyle?animals-farmed&order-by=newest&show-tags=contributor&page-size=20&api-key=test";
-    String SECTIONSURL = "http://content.guardianapis.com/sections?api-key=test";
+    String GUARDIANURL = "http://content.guardianapis.com/";
 
     String SECTIONLOADED = "SECTIONLOADED";
     String SECTIONJSON = "SECTIONJSON";

@@ -7,7 +7,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.support.v7.preference.PreferenceManager;
+import android.util.Log;
 
 import com.example.android.newsapp.data.Article;
 import com.example.android.newsapp.data.Section;
@@ -28,10 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * NewsApp
@@ -62,6 +61,8 @@ public final class Utils {
      * @return URL Object
      */
     public static URL makeURL(String url) {
+
+        Log.v(Utils.class.getSimpleName(), "URL: " + url);
 
         URL urlObj = null;
         if (url != null && url.length() > 0) {
@@ -143,6 +144,7 @@ public final class Utils {
 
     /**
      * Create Section from JSON
+     *
      * @param jsonString Section as jsonString
      * @return List<Section> List of Sectionitems
      * @throws JSONException
@@ -243,16 +245,18 @@ public final class Utils {
 
     /**
      * Check was Section loaded before
+     *
      * @param context Act Context
      * @return boolean isLoaded or not
      */
-    public static boolean hasSectionsLoaded(Context context){
+    public static boolean hasSectionsLoaded(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPreferences.getBoolean(Config.SECTIONLOADED, false);
     }
 
     /**
      * Save SectionData to prefs
+     *
      * @param data Section
      */
     public static void saveToPreferences(Context context, List<?> data) {
@@ -260,22 +264,94 @@ public final class Utils {
         String jsonString = new Gson().toJson(data);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        SharedPreferences.Editor editor =  sharedPreferences.edit();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        editor.putString(Config.SECTIONJSON,jsonString);
+        editor.putString(Config.SECTIONJSON, jsonString);
         editor.putBoolean(Config.SECTIONLOADED, true);
         editor.apply();
     }
 
-    public static List<Section> getSavedSections(Context context){
-
+    /**
+     * Get saved Sections from preferences
+     *
+     * @param context
+     * @return Section as List
+     */
+    public static List<Section> getSavedSections(Context context) {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String json = sharedPreferences.getString(Config.SECTIONJSON,"");
+        String json = sharedPreferences.getString(Config.SECTIONJSON, "");
         Gson gson = new Gson();
 
-        TypeToken<List<Section>> token = new TypeToken<List<Section>>(){};
-        List<Section> sectionsList = gson.fromJson(json,token.getType());
-        return sectionsList;
+        TypeToken<List<Section>> token = new TypeToken<List<Section>>() {};
+        return gson.fromJson(json, token.getType());
     }
+
+    /**
+     * Get Saved Value For Key
+     *
+     * @param context
+     * @param key
+     * @return saved value from key
+     */
+    public static String getValueForSavedKey(Context context, String key) {
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if (key == Config.LISTKEY) {
+            return sharedPreferences.getString(key, Config.INITIALSECTION);
+        } else {
+            return sharedPreferences.getString(key, Config.INITIALLIMIT);
+        }
+    }
+
+    /**
+     * Build URL with given
+     * params
+     *
+     * @param sectionId Selected section
+     * @param pageSize  selected pageSize
+     * @return builded url
+     */
+
+    public static String getBuildedURLForSettings(String sectionId, String pageSize) {
+
+        Uri.Builder builder = initBuilder(sectionId);
+        builder.appendQueryParameter("show-tags", "contributor");
+        builder.appendQueryParameter("order-by", "newest");
+        builder.appendQueryParameter("page-size", pageSize);
+        builder.appendQueryParameter("api-key", "test");
+
+        return builder.toString();
+    }
+
+    /**
+     * Build Section Url
+     * @return section URL
+     */
+    public static String getBuildedSectionURL(){
+        Uri.Builder builder = initBuilder(null);
+        builder.appendQueryParameter("api-key", "test");
+        return builder.toString();
+    }
+
+    /**
+     * Initial builder
+     * @param sectionId
+     * @return Uri.Builder
+     */
+    private static Uri.Builder initBuilder(String sectionId){
+
+        Uri uri = Uri.parse(Config.GUARDIANURL);
+        Uri.Builder builder = uri.buildUpon();
+
+        if(sectionId != null){
+            builder.appendPath(sectionId);
+        }else {
+            builder.appendPath("sections");
+        }
+
+        return builder;
+    }
+
+
 }
