@@ -1,5 +1,6 @@
 package com.example.android.newsapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,11 +12,15 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.android.newsapp.Loader.ArticleLoader;
+import com.example.android.newsapp.Loader.DataLoader;
 import com.example.android.newsapp.adapter.NewsAdapter;
 import com.example.android.newsapp.data.Article;
 import com.example.android.newsapp.helper.Config;
@@ -24,7 +29,7 @@ import com.example.android.newsapp.helper.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Article>>, SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<?>>, SwipeRefreshLayout.OnRefreshListener {
 
     private RecyclerView recyclerView;
     private NewsAdapter newsAdapter;
@@ -42,6 +47,30 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setupReferences();
         setupRecylerView();
         prepareLoading();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.settings) {
+
+            if(Utils.hasSectionsLoaded(this)){
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }else {
+                Toast.makeText(this, "No Section loaded yet. Please wait until sections are loaded",Toast.LENGTH_SHORT).show();
+            }
+
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -78,9 +107,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     private void startLoading(boolean isFirstStart) {
         if (isFirstStart) {
-            getSupportLoaderManager().initLoader(Config.LOADERID, null, this);
+            if(!Utils.hasSectionsLoaded(this))getSupportLoaderManager().initLoader(Config.SECTIONLOADERID, null, this);
+            getSupportLoaderManager().initLoader(Config.ARTICLELOADERID, null, this);
         } else {
-            getSupportLoaderManager().restartLoader(Config.LOADERID, null, this);
+            if(!Utils.hasSectionsLoaded(this))getSupportLoaderManager().initLoader(Config.SECTIONLOADERID, null, this);
+            getSupportLoaderManager().restartLoader(Config.ARTICLELOADERID, null, this);
         }
     }
 
@@ -102,23 +133,36 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @NonNull
     @Override
-    public Loader<List<Article>> onCreateLoader(int id, @Nullable Bundle args) {
-        return new ArticleLoader(MainActivity.this);
+    public Loader<List<?>> onCreateLoader(int id, @Nullable Bundle args) {
+
+        boolean loadSection = false;
+
+        if(id == Config.SECTIONLOADERID) loadSection = true;
+        return new DataLoader(MainActivity.this,loadSection);
     }
 
     @Override
-    public void onLoadFinished(@NonNull Loader<List<Article>> loader, List<Article> data) {
-        setArticles(data);
+    public void onLoadFinished(@NonNull Loader<List<?>> loader, List<?> data) {
+
+        List<?> dataList = data;
+        if(loader.getId() == Config.SECTIONLOADERID){
+            Log.v(MainActivity.class.getSimpleName(), "onLoadFinished: " + data.toString());
+            Utils.saveToPreferences(this, data);
+        }else {
+            setArticles((List<Article>) data);
+        }
+
         Log.v(MainActivity.class.getSimpleName(), "onLoadFinished");
     }
 
     @Override
-    public void onLoaderReset(@NonNull Loader<List<Article>> loader) {
+    public void onLoaderReset(@NonNull Loader<List<?>> loader) {
 
     }
 
     /**
      * Set Articles update the view visibility
+     *
      * @param data Article List
      */
     private void setArticles(List<Article> data) {
@@ -148,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         String message = "";
         switch (problemType) {
-            case Config.NOCONNECTION :
+            case Config.NOCONNECTION:
                 message = getString(R.string.not_connected);
                 break;
             case Config.NOCONTENT:
