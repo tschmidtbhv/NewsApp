@@ -8,4 +8,5 @@
 
     <string name="newslimit">News limit</string>
     <string name="newssection">News Section</string>
+    <string name="no_sections_info">No Section loaded yet. Please wait until sections are loaded</string>
 </resources>

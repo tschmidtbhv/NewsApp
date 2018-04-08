@@ -9,7 +9,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.support.v7.preference.PreferenceManager;
-import android.util.Log;
 
 import com.example.android.newsapp.data.Article;
 import com.example.android.newsapp.data.Section;
@@ -42,15 +41,14 @@ public final class Utils {
     /**
      * Check the Connection to the internet
      *
-     * @param context
-     * @return
+     * @param context current context
+     * @return boolean is connected or not
      */
     public static boolean isConnected(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
-        boolean isConnected = networkInfo != null && networkInfo.isConnected();
-        return isConnected;
+        return (networkInfo != null && networkInfo.isConnected());
     }
 
     /**
@@ -61,8 +59,6 @@ public final class Utils {
      * @return URL Object
      */
     public static URL makeURL(String url) {
-
-        Log.v(Utils.class.getSimpleName(), "URL: " + url);
 
         URL urlObj = null;
         if (url != null && url.length() > 0) {
@@ -81,7 +77,7 @@ public final class Utils {
      *
      * @param url Website URL Obj
      * @return InputStream
-     * @throws IOException
+     * @throws IOException while request
      */
     public static String makeHTTPRequest(URL url) throws IOException {
 
@@ -147,7 +143,7 @@ public final class Utils {
      *
      * @param jsonString Section as jsonString
      * @return List<Section> List of Sectionitems
-     * @throws JSONException
+     * @throws JSONException while reading
      */
     public static List<Section> createSectionsFromJson(String jsonString) throws JSONException {
         List<Section> sectionList = new ArrayList<>();
@@ -157,8 +153,8 @@ public final class Utils {
 
             for (int i = 0; i < results.length(); i++) {
                 JSONObject result = results.getJSONObject(i);
-                String id = result.getString("id");
-                String webTitle = result.getString("webTitle");
+                String id = result.getString(Config.ID);
+                String webTitle = result.getString(Config.WEBTITLE);
 
                 Section section = new Section(id, webTitle);
                 sectionList.add(section);
@@ -186,20 +182,20 @@ public final class Utils {
             for (int i = 0; i < results.length(); i++) {
 
                 JSONObject result = results.getJSONObject(i);
-                String sectionName = result.getString("sectionName");
-                String webPublicationDate = result.getString("webPublicationDate");
-                String webTitle = result.getString("webTitle");
-                String webUrl = result.getString("webUrl");
+                String sectionName = result.getString(Config.SECTIONNAME);
+                String webPublicationDate = result.getString(Config.WEBPUBDATE);
+                String webTitle = result.getString(Config.WEBTITLE);
+                String webUrl = result.getString(Config.WEBURL);
 
                 //Article can have multiple contributor
                 List<Tag> tagList = new ArrayList<>();
 
-                JSONArray tags = result.optJSONArray("tags");
+                JSONArray tags = result.optJSONArray(Config.TAGS);
                 if (tags != null) {
                     for (int y = 0; y < tags.length(); y++) {
                         JSONObject tag = tags.getJSONObject(y);
-                        String firstName = tag.optString("firstName");
-                        String lastName = tag.optString("lastName");
+                        String firstName = tag.optString(Config.FIRSTNAME);
+                        String lastName = tag.optString(Config.LASTNAME);
 
                         if (firstName != null && lastName != null) {
                             tagList.add(new Tag(firstName, lastName));
@@ -219,12 +215,12 @@ public final class Utils {
      *
      * @param jsonString Serverresponse as JSONString
      * @return JSONArray with Results
-     * @throws JSONException
+     * @throws JSONException while reading
      */
     private static JSONArray getResults(String jsonString) throws JSONException {
         JSONObject jsonRoot = new JSONObject(jsonString);
-        JSONObject response = jsonRoot.getJSONObject("response");
-        JSONArray results = response.getJSONArray("results");
+        JSONObject response = jsonRoot.getJSONObject(Config.RESPONSE);
+        JSONArray results = response.getJSONArray(Config.RESULTS);
         return results;
     }
 
@@ -274,7 +270,7 @@ public final class Utils {
     /**
      * Get saved Sections from preferences
      *
-     * @param context
+     * @param context current context
      * @return Section as List
      */
     public static List<Section> getSavedSections(Context context) {
@@ -283,21 +279,22 @@ public final class Utils {
         String json = sharedPreferences.getString(Config.SECTIONJSON, "");
         Gson gson = new Gson();
 
-        TypeToken<List<Section>> token = new TypeToken<List<Section>>() {};
+        TypeToken<List<Section>> token = new TypeToken<List<Section>>() {
+        };
         return gson.fromJson(json, token.getType());
     }
 
     /**
      * Get Saved Value For Key
      *
-     * @param context
-     * @param key
+     * @param context current context
+     * @param key preference KEY
      * @return saved value from key
      */
     public static String getValueForSavedKey(Context context, String key) {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        if (key == Config.LISTKEY) {
+        if (key.equals(Config.LISTKEY)) {
             return sharedPreferences.getString(key, Config.INITIALSECTION);
         } else {
             return sharedPreferences.getString(key, Config.INITIALLIMIT);
@@ -316,37 +313,39 @@ public final class Utils {
     public static String getBuildedURLForSettings(String sectionId, String pageSize) {
 
         Uri.Builder builder = initBuilder(sectionId);
-        builder.appendQueryParameter("show-tags", "contributor");
-        builder.appendQueryParameter("order-by", "newest");
-        builder.appendQueryParameter("page-size", pageSize);
-        builder.appendQueryParameter("api-key", "test");
+        builder.appendQueryParameter(Config.SHOWTAGS, Config.CONTRIBUTOR);
+        builder.appendQueryParameter(Config.ORDERBY, Config.NEWEST);
+        builder.appendQueryParameter(Config.PAGESIZE, pageSize);
+        builder.appendQueryParameter(Config.APIKEY, Config.TEST);
 
         return builder.toString();
     }
 
     /**
      * Build Section Url
+     *
      * @return section URL
      */
-    public static String getBuildedSectionURL(){
+    public static String getBuildedSectionURL() {
         Uri.Builder builder = initBuilder(null);
-        builder.appendQueryParameter("api-key", "test");
+        builder.appendQueryParameter(Config.APIKEY, Config.TEST);
         return builder.toString();
     }
 
     /**
      * Initial builder
-     * @param sectionId
+     *
+     * @param sectionId id for the section
      * @return Uri.Builder
      */
-    private static Uri.Builder initBuilder(String sectionId){
+    private static Uri.Builder initBuilder(String sectionId) {
 
         Uri uri = Uri.parse(Config.GUARDIANURL);
         Uri.Builder builder = uri.buildUpon();
 
-        if(sectionId != null){
+        if (sectionId != null) {
             builder.appendPath(sectionId);
-        }else {
+        } else {
             builder.appendPath("sections");
         }
 
