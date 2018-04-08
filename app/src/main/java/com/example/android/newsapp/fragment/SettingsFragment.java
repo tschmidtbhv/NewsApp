@@ -1,6 +1,5 @@
 package com.example.android.newsapp.fragment;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,11 +10,8 @@ import android.support.v7.preference.PreferenceCategory;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.preference.PreferenceScreen;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.example.android.newsapp.R;
-import com.example.android.newsapp.SettingsActivity;
 import com.example.android.newsapp.data.Section;
 import com.example.android.newsapp.helper.Config;
 import com.example.android.newsapp.helper.Utils;
@@ -26,8 +22,6 @@ import java.util.List;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements android.support.v7.preference.Preference.OnPreferenceChangeListener {
 
-
-
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 
@@ -35,6 +29,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements androi
         createSettings(context);
     }
 
+    /**
+     * Bind Pref Summary
+     *
+     * @param context      Act Context
+     * @param preference   to bind
+     * @param key          to setting
+     * @param initialValue default Value for setting
+     */
     private void bindPreferenceSummaryToValue(Context context, Preference preference, String key, String initialValue) {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -51,6 +53,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements androi
         PreferenceCategory category = new PreferenceCategory(context);
         preferenceScreen.addPreference(category);
 
+        //Add Preferences
         category.addPreference(createEditPreference(context));
         category.addPreference(createListPreference(context));
 
@@ -71,12 +74,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements androi
         listPreference.setOnPreferenceChangeListener(this);
 
 
-
         List<String> sectionReadable = new ArrayList<>();
         List<String> sectionID = new ArrayList<>();
 
         List<Section> sectionList = Utils.getSavedSections(context);
-        for(int i = 0; i < sectionList.size(); i++){
+        for (int i = 0; i < sectionList.size(); i++) {
 
             Section section = sectionList.get(i);
             sectionReadable.add(section.getWebTitle());
@@ -100,6 +102,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements androi
 
     /**
      * Create EditPreferences
+     *
      * @param context Act Context
      * @return EditPreference
      */
@@ -109,30 +112,31 @@ public class SettingsFragment extends PreferenceFragmentCompat implements androi
         limit.setDialogLayoutResource(R.layout.layout);
         limit.setTitle(R.string.newslimit);
         limit.setOnPreferenceChangeListener(this);
-        bindPreferenceSummaryToValue(context,limit, Config.LIMITKEY, Config.INITIALLIMIT);
+        bindPreferenceSummaryToValue(context, limit, Config.LIMITKEY, Config.INITIALLIMIT);
         return limit;
     }
 
 
     /**
      * Called when Preferences changed
-     * @param preference
-     * @param newValue New input value
+     *
+     * @param preference to change
+     * @param newValue   New input value
      * @return boolean
      */
     @Override
     public boolean onPreferenceChange(android.support.v7.preference.Preference preference, Object newValue) {
         String stringValue = newValue.toString();
 
-        if(preference instanceof ListPreference){
+        if (preference instanceof ListPreference) {
             ListPreference listPreference = (ListPreference) preference;
             int index = listPreference.findIndexOfValue(stringValue);
 
-            if(index >= 0){
+            if (index >= 0) {
                 CharSequence[] labels = listPreference.getEntries();
                 preference.setSummary(labels[index]);
             }
-        }else {
+        } else {
             preference.setSummary(stringValue);
         }
 

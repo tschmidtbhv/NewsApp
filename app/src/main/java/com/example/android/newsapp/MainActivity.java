@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -37,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private ProgressBar progressBar;
     private TextView infoText;
     private SwipeRefreshLayout refreshLayout;
-    private boolean isFirstStart = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,11 +59,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.settings) {
 
-            if(Utils.hasSectionsLoaded(this)){
+            if (Utils.hasSectionsLoaded(this)) {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(intent);
-            }else {
-                Toast.makeText(this, "No Section loaded yet. Please wait until sections are loaded",Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, getString(R.string.no_sections_info), Toast.LENGTH_SHORT).show();
             }
 
             return true;
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void prepareLoading() {
         if (Utils.isConnected(this)) {
             progressBar.setVisibility(View.VISIBLE);
-            startLoading(isFirstStart);
+            startLoading(true);
         } else {
             progressBar.setVisibility(View.GONE);
             setInfo(Config.NOCONNECTION);
@@ -107,10 +106,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     private void startLoading(boolean isFirstStart) {
         if (isFirstStart) {
-            if(!Utils.hasSectionsLoaded(this))getSupportLoaderManager().initLoader(Config.SECTIONLOADERID, null, this);
+            if (!Utils.hasSectionsLoaded(this))
+                getSupportLoaderManager().initLoader(Config.SECTIONLOADERID, null, this);
             getSupportLoaderManager().initLoader(Config.ARTICLELOADERID, null, this);
         } else {
-            if(!Utils.hasSectionsLoaded(this))getSupportLoaderManager().initLoader(Config.SECTIONLOADERID, null, this);
+            if (!Utils.hasSectionsLoaded(this))
+                getSupportLoaderManager().initLoader(Config.SECTIONLOADERID, null, this);
             getSupportLoaderManager().restartLoader(Config.ARTICLELOADERID, null, this);
         }
     }
@@ -137,22 +138,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         boolean loadSection = false;
 
-        if(id == Config.SECTIONLOADERID) loadSection = true;
-        return new DataLoader(MainActivity.this,loadSection);
+        if (id == Config.SECTIONLOADERID) loadSection = true;
+        return new DataLoader(MainActivity.this, loadSection);
     }
 
     @Override
     public void onLoadFinished(@NonNull Loader<List<?>> loader, List<?> data) {
 
-        List<?> dataList = data;
-        if(loader.getId() == Config.SECTIONLOADERID){
-            Log.v(MainActivity.class.getSimpleName(), "onLoadFinished: " + data.toString());
+        if (loader.getId() == Config.SECTIONLOADERID) {
             Utils.saveToPreferences(this, data);
-        }else {
+        } else {
             setArticles((List<Article>) data);
         }
 
-        Log.v(MainActivity.class.getSimpleName(), "onLoadFinished");
     }
 
     @Override
